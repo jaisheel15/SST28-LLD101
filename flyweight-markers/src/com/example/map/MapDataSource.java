@@ -6,21 +6,15 @@ import java.util.Random;
 
 /**
  * Generates markers for demo/testing.
- *
- * CURRENT STATE (BROKEN ON PURPOSE):
- * - Creates new MarkerStyle per MapMarker via MapMarker constructor.
- *
- * TODO (student):
- * - After introducing MarkerStyleFactory, refactor so identical styles are shared.
- * - Suggested approach:
- *   1) Change MapMarker to accept MarkerStyle directly
- *   2) Use MarkerStyleFactory.get(shape,color,size,filled) here
+ * Uses MarkerStyleFactory so identical styles are shared (Flyweight pattern).
  */
 public class MapDataSource {
 
-    private static final String[] SHAPES = {"PIN", "CIRCLE", "SQUARE"};
-    private static final String[] COLORS = {"RED", "BLUE", "GREEN", "ORANGE"};
-    private static final int[] SIZES = {10, 12, 14, 16};
+    private static final String[] SHAPES = { "PIN", "CIRCLE", "SQUARE" };
+    private static final String[] COLORS = { "RED", "BLUE", "GREEN", "ORANGE" };
+    private static final int[] SIZES = { 10, 12, 14, 16 };
+
+    private final MarkerStyleFactory styleFactory = new MarkerStyleFactory();
 
     public List<MapMarker> loadMarkers(int count) {
         Random rnd = new Random(7);
@@ -37,8 +31,13 @@ public class MapDataSource {
             int size = SIZES[rnd.nextInt(SIZES.length)];
             boolean filled = rnd.nextBoolean();
 
-            out.add(new MapMarker(lat, lng, label, shape, color, size, filled));
+            MarkerStyle style = styleFactory.get(shape, color, size, filled);
+            out.add(new MapMarker(lat, lng, label, style));
         }
         return out;
+    }
+
+    public int distinctStyleCount() {
+        return styleFactory.cacheSize();
     }
 }
